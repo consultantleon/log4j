@@ -18,9 +18,6 @@
 package org.apache.log4j.helpers;
 
 import java.net.URL;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
-import java.io.InterruptedIOException;
 
 
 /**
@@ -29,31 +26,25 @@ import java.io.InterruptedIOException;
   @author Ceki G&uuml;lc&uuml;
  */
 
+
+
 public class Loader  { 
 
   static final String TSTR = "Caught Exception while in Loader.getResource. This may be innocuous.";
 
-  // We conservatively assume that we are running under Java 1.x
-  static private boolean java1 = true;
+  static private boolean java1 = false;
   
   static private boolean ignoreTCL = false;
-  
-  static {
-    String prop = OptionConverter.getSystemProperty("java.version", null);
-    
-    if(prop != null) {
-      int i = prop.indexOf('.');
-      if(i != -1) {	
-	if(prop.charAt(i+1) != '1') {
-        java1 = false;
-    }
-      } 
-    }
-    String ignoreTCLProp = OptionConverter.getSystemProperty("log4j.ignoreTCL", null);
-    if(ignoreTCLProp != null) {
-      ignoreTCL = OptionConverter.toBoolean(ignoreTCLProp, true);      
-    }   
-  }
+
+	static {
+		// Nobody runs java 1.0 or 1.1 in 2018
+		// anyway, we're compiling for 1.6+, so cannot be run with older jdks
+		java1 = false;
+		String ignoreTCLProp = OptionConverter.getSystemProperty("log4j.ignoreTCL", null);
+		if (ignoreTCLProp != null) {
+			ignoreTCL = OptionConverter.toBoolean(ignoreTCLProp, true);
+		}
+	}
   
   /**
    *  Get a resource by delegating to getResource(String).
@@ -90,7 +81,7 @@ public class Loader  {
     URL url = null;
     
     try {
-  	if(!java1 && !ignoreTCL) {
+  	if(!ignoreTCL) {
   	  classLoader = getTCL();
   	  if(classLoader != null) {
   	    LogLog.debug("Trying to find ["+resource+"] using context classloader "
@@ -113,15 +104,7 @@ public class Loader  {
   	    return url;
   	  }
   	}
-    } catch(IllegalAccessException t) {
-        LogLog.warn(TSTR, t);
-    } catch(InvocationTargetException t) {
-        if (t.getTargetException() instanceof InterruptedException
-                || t.getTargetException() instanceof InterruptedIOException) {
-            Thread.currentThread().interrupt();
-        }
-        LogLog.warn(TSTR, t);
-    } catch(Throwable t) {
+    }  catch(Throwable t) {
       //
       //  can't be InterruptedException or InterruptedIOException
       //    since not declared, must be error or RuntimeError.
@@ -152,19 +135,10 @@ public class Loader  {
     * returns <code>null<code>.
     *
     *  */
-  private static ClassLoader getTCL() throws IllegalAccessException, 
-    InvocationTargetException {
+  private static ClassLoader getTCL() {
 
-    // Are we running on a JDK 1.2 or later system?
-    Method method = null;
-    try {
-      method = Thread.class.getMethod("getContextClassLoader", null);
-    } catch (NoSuchMethodException e) {
-      // We are running on JDK 1.1
-      return null;
-    }
-    
-    return (ClassLoader) method.invoke(Thread.currentThread(), null);
+	  return Thread.currentThread().getContextClassLoader();
+
   }
 
 
@@ -184,17 +158,14 @@ public class Loader  {
     } else {
       try {
 	    return getTCL().loadClass(clazz);
+	 // we reached here because tcl was null or because of a
+	      // security exception, or because clazz could not be loaded...
+	      // In any case we now try one more time
       }
-      // we reached here because tcl was null or because of a
-      // security exception, or because clazz could not be loaded...
-      // In any case we now try one more time
-      catch(InvocationTargetException e) {
-          if (e.getTargetException() instanceof InterruptedException
-                  || e.getTargetException() instanceof InterruptedIOException) {
-              Thread.currentThread().interrupt();
-          }
-      } catch(Throwable t) {
+      catch(Throwable t) {
       }
+      
+      
     }
     return Class.forName(clazz);
   }
