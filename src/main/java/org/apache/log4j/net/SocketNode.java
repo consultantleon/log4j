@@ -53,7 +53,7 @@ public class SocketNode implements Runnable {
     this.socket = socket;
     this.hierarchy = hierarchy;
     try {
-      ois = new ObjectInputStream(
+      ois = new FilteredObjectInputStream(
                          new BufferedInputStream(socket.getInputStream()));
     } catch(InterruptedIOException e) {
       Thread.currentThread().interrupt();
