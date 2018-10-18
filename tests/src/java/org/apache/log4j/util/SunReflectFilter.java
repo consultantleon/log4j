@@ -31,11 +31,17 @@ public class SunReflectFilter implements Filter {
     if(in == null) {
       return null;
     }
-    if (util.match("/at sun.reflect/", in)) {
+    if (in.contains("/at sun.reflect/")) {
       return null;
     }
-    if (in.indexOf("at java.lang.reflect.") >= 0) {
+    if (in.contains("at java.lang.reflect.")) {
       return null;
+    }
+    if (in.contains("at java.base/jdk.internal.reflect.")) {
+    	return null;
+    }
+    if (in.contains("at java.base/java.lang.reflect.")) {
+    	return null;
     }
     if (in.indexOf("Compiled Code") >= 0) {
         if(in.indexOf("junit.framework.TestSuite") >= 0) {
