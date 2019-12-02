@@ -240,7 +240,6 @@
 						<Bundle-SymbolicName>org.apache.log4j</Bundle-SymbolicName>
 						<Export-Package>org.apache.log4j.*;version=${project.version};-noimport:=true</Export-Package>
 						<Import-Package>
-							javax.jmdns.*;resolution:=optional,
 							javax.jms.*;resolution:=optional,
 							javax.mail.*;resolution:=optional,
 							*
