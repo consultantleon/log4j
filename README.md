@@ -3,6 +3,6 @@ Mirror of Apache log4j
 
 ## Changes from 1.2.17
 
- * Fix for CVE-2017-5645 and CVE-2019-17571.
+ * Fix for [CVE-2017-5645](https://nvd.nist.gov/vuln/detail/CVE-2017-5645) and [CVE-2019-17571](https://nvd.nist.gov/vuln/detail/CVE-2019-17571).
  * Java 11 support
  * Compiled for java 8
